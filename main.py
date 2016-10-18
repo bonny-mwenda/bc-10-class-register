@@ -1,5 +1,6 @@
 from termcolor import cprint
 import cmd
+import time
 from peewee import *
 from models import User, Class_, Student
 
@@ -81,6 +82,43 @@ class Register(cmd.Cmd):
         cprint("Created new class:\nName: {0}\tid: {1}".format(
             new_class.class_name, new_class.id), 'green', 'on_grey')
 
+    def do_start(self, arg):
+        """Start a class session."""
+
+        class_id = int(arg)
+        class_instance = Class_.get(Class_.id == class_id)
+        start = time.time()
+
+        # Set class session to active
+        active = class_instance.update(session=True)
+        active.execute()
+
+        # Update class time with current start time
+        update_start_time = class_instance.update(
+            start_time=start)
+        update_start_time.execute()
+
+        cprint("{0} class is now in session. Start time: {1}".format(
+            class_instance.class_name, class_instance.start_time))
+
+    def do_end(self, arg):
+        """End a class session."""
+
+        class_id = int(arg)
+        class_instance = Class_.get(Class_.id == class_id)
+        end = time.time()
+
+        # Update end time with current time
+        update_end_time = class_instance.update(end_time=end)
+        update_end_time.execute()
+
+        # Set class session to closed
+        closed = class_instance.update(session=False)
+        closed.execute()
+
+        cprint("{0} has ended. End time: {1}".format(
+            class_instance.class_name, class_instance.end_time))
+
     def do_delete_class(self, arg):
         """Delete class."""
 
@@ -104,8 +142,11 @@ class Register(cmd.Cmd):
     def do_list_classes(self, args):
         """List students."""
 
+        cprint("List of all classes:", 'cyan', 'on_grey')
         for class_ in Class_.select():
-            cprint(class_.class_name, 'green', 'on_grey')
+            cprint("\tid: {0}\n\tName: {1}\n\tSession Status: {2}".format(class_.id,
+                                                                        class_.class_name, class_.session), 'green', 'on_grey')
+            print("\n")
 
     def do_exit(self, args):
         cprint("Good bye!", 'green', 'on_grey')
