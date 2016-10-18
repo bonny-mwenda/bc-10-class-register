@@ -39,10 +39,11 @@ class Checkout_Log(Model):
         database = db  # Use register model
 
 
-class CurrentCheckins(Model):
+class Checkin(Model):
     student_id = ForeignKeyField(User, related_name='students')
     class_id = ForeignKeyField(Class_, related_name='classes')
     no_of_checkins = IntegerField(default=0)
+    status = BooleanField()
 
     class Meta:
         database = db  # Use register model
