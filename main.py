@@ -2,7 +2,7 @@ from termcolor import cprint
 import cmd
 import time
 from peewee import *
-from models import User, Class_, Student
+from models import User, Class_, Student, Checkin
 
 db = SqliteDatabase('register.db')
 
@@ -23,12 +23,12 @@ class Register(cmd.Cmd):
         """
 
         db.connect
-        tables = [User, Student, Class_]
+        tables = [User, Student, Class_, Checkin]
 
         # Create tables only if they exist
-        if db.create_tables(tables, safe=True):
-            for table in tables:
-                cprint("Sucessfully created {}s table".format(table.lower))
+        db.create_tables(tables, safe=True)
+        for table in tables:
+            cprint("Sucessfully created {}s table".format(table))
 
     def do_drop_tables(self, args):
         """Drop all tables."""
@@ -63,6 +63,38 @@ class Register(cmd.Cmd):
         cprint("Created new student:\nName: {0}\tid: {1}".format(
             new_student.student_name, new_student.id), 'green', 'on_grey')
 
+    def do_check_in(self, args):
+        """Check in student to a class"""
+
+        params = args.split()
+        student_id = params[0]
+        class_id = params[1]
+
+        # Add a check in entry to check_ins table
+        check_in = Checkin.create(
+            student_id=student_id, class_id=class_id, status=True)
+        check_in.save()
+
+        print("checked in student")
+
+        # cprint("Checked in {} to {} class".format(
+        #    check_in.student_id, check_in.class_id), 'green', 'on_grey')
+
+    def do_check_out(self, args):
+        """Check out student from a class."""
+
+        params = args.split()
+        student_id = params[0]
+        class_id = params[1]
+
+        # Update checked in status to false
+        check_out = Checkin.update(status=False).where(
+            Checkin.student_id == student_id and Checkin.class_id == class_id)
+        check_out.execute()
+
+        # cprint("Checked out {} from {} class".format(
+        #    check_out.student_name, check_out.class_name), 'green', 'on_grey')
+
     def do_delete_student(self, arg):
         """Delete student."""
 
@@ -89,8 +121,8 @@ class Register(cmd.Cmd):
         class_instance = Class_.get(Class_.id == class_id)
         start = time.time()
 
-        # Set class session to active
-        active = class_instance.update(session=True)
+        # Set class session to true
+        active = Class_.update(session=True).where(Class_.id == class_id)
         active.execute()
 
         # Update class time with current start time
@@ -105,18 +137,19 @@ class Register(cmd.Cmd):
         """End a class session."""
 
         class_id = int(arg)
-        class_instance = Class_.get(Class_.id == class_id)
         end = time.time()
+        class_instance = Class_.get(Class_.id == class_id)
 
         # Update end time with current time
-        update_end_time = class_instance.update(end_time=end)
+        update_end_time = class_instance.update(
+            end_time=end)
         update_end_time.execute()
 
         # Set class session to closed
-        closed = class_instance.update(session=False)
+        closed = Class_.update(session=False).where(Class_.id == class_id)
         closed.execute()
 
-        cprint("{0} has ended. End time: {1}".format(
+        cprint("{0} class has ended. End time: {1}".format(
             class_instance.class_name, class_instance.end_time))
 
     def do_delete_class(self, arg):
@@ -136,8 +169,15 @@ class Register(cmd.Cmd):
     def do_list_students(self, args):
         """List students."""
 
+        cprint("List of all students:", 'cyan', 'on_grey')
         for student in Student.select():
-            cprint(student.student_name, 'green', 'on_grey')
+            if student.Checkin and student.Checkin.status:
+                cprint("\tName: {0}\n\tChecked In: {1}".format(
+                    student.student_name, student.Checkin.status), 'green', 'on_grey')
+                print("\n")
+            cprint("\tName: {0}\n\tChecked In: False".format(
+                student.student_name), 'green', 'on_grey')
+            print("\n")
 
     def do_list_classes(self, args):
         """List students."""
@@ -145,7 +185,7 @@ class Register(cmd.Cmd):
         cprint("List of all classes:", 'cyan', 'on_grey')
         for class_ in Class_.select():
             cprint("\tid: {0}\n\tName: {1}\n\tSession Status: {2}".format(class_.id,
-                                                                        class_.class_name, class_.session), 'green', 'on_grey')
+                                                                          class_.class_name, class_.session), 'green', 'on_grey')
             print("\n")
 
     def do_exit(self, args):
