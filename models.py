@@ -23,7 +23,7 @@ class Student(Model):
 
 class Class_(Model):
     class_name = CharField()
-    session = BooleanField(default=False)
+    session = BooleanField()
     start_time = DateTimeField(default=0)
     end_time = DateTimeField(default=0)
 
