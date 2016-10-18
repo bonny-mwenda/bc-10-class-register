@@ -17,9 +17,10 @@ class Register(cmd.Cmd):
         """Create class register tables.
 
         Tables:
-        users table for authentication
-        students table
-        class_ table for classes
+        users - for signup/signin
+        students - record of all students
+        class_ - record of all classes
+        checkin table - record of classes attended by students
         """
 
         db.connect
