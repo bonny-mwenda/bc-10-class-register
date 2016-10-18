@@ -23,7 +23,9 @@ class Student(Model):
 
 class Class_(Model):
     class_name = CharField()
-    session = BooleanField()
+    session = BooleanField(default=False)
+    start_time = DateTimeField(default=0)
+    end_time = DateTimeField(default=0)
 
     class Meta:
         database = db  # Use register model
