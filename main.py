@@ -35,7 +35,7 @@ class Register(cmd.Cmd):
         """Drop all tables."""
 
         db.connect
-        tables = [User, Student, Class_]
+        tables = [User, Student, Class_, Checkin]
         for table in tables:
             if db.drop_table(table):
                 cprint("Sucessfully removed {}s table".format(table))
@@ -68,33 +68,65 @@ class Register(cmd.Cmd):
         """Check in student to a class"""
 
         params = args.split()
-        student_id = params[0]
-        class_id = params[1]
+        student_id = int(params[0])
+        class_id = int(params[1])
 
-        # Add a check in entry to check_ins table
-        check_in = Checkin.create(
-            student_id=student_id, class_id=class_id, status=True)
-        check_in.save()
+        student = Student.get(Student.id == student_id)
+        class_ = Class_.get(Class_.id == class_id)
 
-        print("checked in student")
+        if student.checked_in:
+            cprint("{} is already checked in".format(
+                student.student_name), 'red', 'on_grey')
+        elif not class_.session:
+            cprint("{} is not in session".format(
+                class_.class_name), 'red', 'on_grey')
+        else:
+            # Add a check in entry to check_ins table
+            check_in = Checkin.create(
+                student=student, class_=class_, status=True)
+            check_in.save()
 
-        # cprint("Checked in {} to {} class".format(
-        #    check_in.student_id, check_in.class_id), 'green', 'on_grey')
+            # Set the student's check_in status to true
+            qry = Student.update(checked_in=1).where(Student.id == student_id)
+            qry.execute()
+
+            cprint("Checked in {} to {} class".format(
+                student.student_name, class_.class_name), 'green', 'on_grey')
 
     def do_check_out(self, args):
         """Check out student from a class."""
 
         params = args.split()
-        student_id = params[0]
-        class_id = params[1]
+        student_id = int(params[0])
+        class_id = int(params[1])
 
-        # Update checked in status to false
-        check_out = Checkin.update(status=False).where(
-            Checkin.student_id == student_id and Checkin.class_id == class_id)
-        check_out.execute()
+        student = Student.get(Student.id == student_id)
+        class_ = Class_.get(Class_.id == class_id)
 
-        # cprint("Checked out {} from {} class".format(
-        #    check_out.student_name, check_out.class_name), 'green', 'on_grey')
+        # Prevent checking out if class is not in session
+        if class_.session:
+            cprint(
+                "Warning! Class in session. End class to check out student", 'red', 'on_grey')
+            cprint("If this is an emergency, enter 'sos'.", 'cyan')
+            ans = raw_input()
+            if ans == sos:
+                cprint("Give a reason for checking out {}".format(
+                    student.student_name), 'cyan')
+                reason = raw_input()
+                cprint("Checked out {} from {}.\n\tReason: {}".format(
+                    student.student_name, class_.class_name, reason))
+        else:
+            # Update checked in status to false
+            check_out = Checkin.update(status=0).where(
+                (Checkin.student_id == student_id)and (Checkin.class__id == class_id))
+            check_out.execute()
+
+            # Set the student's check_in status to false
+            qry = Student.update(checked_in=0).where(Student.id == student_id)
+            qry.execute()
+
+            cprint("Checked out {} from {} class".format(
+                student.student_name, class_.class_name), 'green', 'on_grey')
 
     def do_delete_student(self, arg):
         """Delete student."""
@@ -127,8 +159,8 @@ class Register(cmd.Cmd):
         active.execute()
 
         # Update class time with current start time
-        update_start_time = class_instance.update(
-            start_time=start)
+        update_start_time = Class_.update(
+            start_time=start).where(Class_.id == class_id)
         update_start_time.execute()
 
         cprint("{0} class is now in session. Start time: {1}".format(
@@ -142,8 +174,8 @@ class Register(cmd.Cmd):
         class_instance = Class_.get(Class_.id == class_id)
 
         # Update end time with current time
-        update_end_time = class_instance.update(
-            end_time=end)
+        update_end_time = Class_.update(
+            end_time=end).where(Class_.id == class_id)
         update_end_time.execute()
 
         # Set class session to closed
@@ -170,14 +202,20 @@ class Register(cmd.Cmd):
     def do_list_students(self, args):
         """List students."""
 
+        # in_session = Student.select().where(Student.checked_in==1).get()
+        # not_in_session = Student.select().where(Student.checked_in==0).get()
+
         cprint("List of all students:", 'cyan', 'on_grey')
         for student in Student.select():
-            if student.Checkin and student.Checkin.status:
-                cprint("\tName: {0}\n\tChecked In: {1}".format(
-                    student.student_name, student.Checkin.status), 'green', 'on_grey')
+            if student.checked_in:
+                sc = Checkin.select().where(Checkin.student_id ==
+                                            student.id and Checkin.status == 1).get()
+                # class_name = c.student_id
+                cprint("\tId: {}\n\tName: {}\n\tChecked In: {}\n\tClass: {}".format(student.id,
+                                                                                    student.student_name, student.checked_in, sc.class_.class_name), 'green', 'on_grey')
                 print("\n")
-            cprint("\tName: {0}\n\tChecked In: False".format(
-                student.student_name), 'green', 'on_grey')
+            cprint("\tId: {}\tName: {}\n\tChecked In: False".format(student.id,
+                                                                    student.student_name), 'green', 'on_grey')
             print("\n")
 
     def do_list_classes(self, args):
@@ -185,9 +223,16 @@ class Register(cmd.Cmd):
 
         cprint("List of all classes:", 'cyan', 'on_grey')
         for class_ in Class_.select():
-            cprint("\tid: {0}\n\tName: {1}\n\tSession Status: {2}".format(class_.id,
-                                                                          class_.class_name, class_.session), 'green', 'on_grey')
-            print("\n")
+            if class_.session:
+                n = Checkin.select().where((Checkin.class__id == class_.id)
+                                           and (Checkin.status == 1))
+                cprint("\tid: {0}\n\tName: {1}\n\tSession Status: {2}\n\tStudents: {3}".format(
+                    class_.id, class_.class_name, class_.session, n.count()), 'green', 'on_grey')
+                print("\n")
+            else:
+                cprint("\tid: {0}\n\tName: {1}\n\tSession Status: {2}".format(
+                    class_.id, class_.class_name, class_.session), 'green', 'on_grey')
+                print("\n")
 
     def do_exit(self, args):
         cprint("Good bye!", 'green', 'on_grey')
