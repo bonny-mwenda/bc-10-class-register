@@ -38,15 +38,15 @@ class Class_(BaseModel):
 class Checkout_Log(BaseModel):
     """Chekout model."""
 
-    # student_id = ForeignKeyField(User, related_name='students')
+    student = ForeignKeyField(User, related_name='students')
     reason = TextField()
 
 
 class Checkin(BaseModel):
     """Checkin model."""
 
-    student_id = ForeignKeyField(User, related_name='students')
-    class_id = ForeignKeyField(Class_, related_name='classes')
+    student = ForeignKeyField(User, related_name='students')
+    class_ = ForeignKeyField(Class_, related_name='classes')
     no_of_checkins = IntegerField(default=0)
     status = BooleanField()
 
