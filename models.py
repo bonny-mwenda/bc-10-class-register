@@ -39,6 +39,7 @@ class Checkout_Log(BaseModel):
     """Chekout model."""
 
     student_name = CharField()
+    student_id = IntegerField()
     reason = TextField()
 
 
@@ -50,8 +51,3 @@ class Checkin(BaseModel):
     no_of_checkins = IntegerField(default=0)
     status = BooleanField()
 
-
-class CheckinHistory(BaseModel):
-    # student_id = ForeignKeyField(User, related_name='students')
-    # class_id = ForeignKeyField(Class_, related_name='classes')
-    no_of_checkins = IntegerField(default=0)
