@@ -5,54 +5,53 @@ db = SqliteDatabase('register.db')
 migrator = SqliteMigrator(db)
 
 
-class User(Model):
+class BaseModel(Model):
+    """Base class that specifies the database."""
+
+    class Meta:
+        database = db
+
+
+class User(BaseModel):
+    """Users model."""
+
     username = CharField()
     password = CharField()
 
-    class Meta:
-        database = db  # Use register model
 
+class Student(BaseModel):
+    """Students model."""
 
-class Student(Model):
     student_name = CharField()
     checked_in = BooleanField()
 
-    class Meta:
-        database = db  # Use register model
 
+class Class_(BaseModel):
+    """Class in model."""
 
-class Class_(Model):
     class_name = CharField()
     session = BooleanField()
     start_time = DateTimeField(default=0)
     end_time = DateTimeField(default=0)
 
-    class Meta:
-        database = db  # Use register model
 
+class Checkout_Log(BaseModel):
+    """Chekout model."""
 
-class Checkout_Log(Model):
     # student_id = ForeignKeyField(User, related_name='students')
     reason = TextField()
 
-    class Meta:
-        database = db  # Use register model
 
+class Checkin(BaseModel):
+    """Checkin model."""
 
-class Checkin(Model):
     student_id = ForeignKeyField(User, related_name='students')
     class_id = ForeignKeyField(Class_, related_name='classes')
     no_of_checkins = IntegerField(default=0)
     status = BooleanField()
 
-    class Meta:
-        database = db  # Use register model
 
-
-class CheckinHistory(Model):
+class CheckinHistory(BaseModel):
     # student_id = ForeignKeyField(User, related_name='students')
     # class_id = ForeignKeyField(Class_, related_name='classes')
     no_of_checkins = IntegerField(default=0)
-
-    class Meta:
-        database = db  # Use register model
