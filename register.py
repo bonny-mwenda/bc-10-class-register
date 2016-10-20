@@ -48,16 +48,16 @@ def create_student(student_name):
 
 def check_in(student_id, class_id):
     """Checkin student to a class"""
-    # import ipdb; ipdb.set_trace()
+
     try:
         student = Student.get(Student.id == student_id)
     except Exception:
-        print('Student Id Not Found')
+        cprint('Student Id Not Found', 'red')
         return
     try:
         class_ = Class_.get(Class_.id == class_id)
     except Exception:
-        print('Class Not Found')
+        cprint('Class Not Found', 'red')
         return
 
     if student.checked_in:
@@ -69,7 +69,7 @@ def check_in(student_id, class_id):
     else:
         # Add a check in entry to check_ins table
         check_in = Checkin.create(
-            student=student, class_=class_, status=True)
+            student=student, class_=class_, status=1)
         check_in.save()
 
         # Set the student's check_in status to true
@@ -83,8 +83,16 @@ def check_in(student_id, class_id):
 def check_out(student_id, class_id):
     """Check_out student from a class"""
 
-    student = Student.get(Student.id == student_id)
-    class_ = Class_.get(Class_.id == class_id)
+    try:
+        student = Student.get(Student.id == student_id)
+    except Exception:
+        cprint('Student Not Found', 'red')
+        return
+    try:
+        class_ = Class_.get(Class_.id == class_id)
+    except Exception:
+        cprint('Class Not Found', 'red')
+        return
 
     # Prevent checking out if class is not in session
     if class_.session == 1:
@@ -101,7 +109,7 @@ def check_out(student_id, class_id):
             log.save()
 
             check_out = Checkin.update(status=0).where(
-            (Checkin.student_id == student_id)and (Checkin.class__id == class_id))
+            (Checkin.student_id == student_id) and (Checkin.class__id == class_id))
             check_out.execute()
 
             # Set the student's check_in status to false
@@ -127,7 +135,12 @@ def check_out(student_id, class_id):
 def delete_student(student_id):
     """Delete student"""
 
-    student = Student.get(Student.id == student_id)
+    try:
+        student = Student.get(Student.id == student_id)
+    except Exception:
+        cprint("Student not found", 'red')
+        return
+
     student.delete_instance()
     cprint("Student was successfully deleted", 'green', 'on_grey')
 
@@ -146,7 +159,12 @@ def create_class(class_name):
 def log_start(class_id):
     """Start a class session"""
 
-    class_instance = Class_.get(Class_.id == class_id)
+    try:
+        class_instance = Class_.get(Class_.id == class_id)
+    except Exception:
+        cprint('Class Not Found', 'red')
+        return
+
     start = time.time()
 
     if class_instance.session:
@@ -170,8 +188,13 @@ def log_start(class_id):
 def log_end(class_id):
     """End class session"""
 
+    try:
+        class_instance = Class_.get(Class_.id == class_id)
+    except Exception:
+        cprint('Student Not Found', 'red')
+        return
+
     end = time.time()
-    class_instance = Class_.get(Class_.id == class_id)
 
     if not class_instance.session:
         cprint("{} is not in session".format(
@@ -200,7 +223,12 @@ def log_end(class_id):
 def delete_class(class_id):
     """Delete class"""
 
-    class_ = Class_.get(Class_.id == class_id)
+    try:
+        class_ = Class_.get(Class_.id == class_id)
+    except Exception:
+        cprint("Class not found", 'red')
+        return
+
     class_.delete_instance()
     cprint("Class was successfully deleted", 'green', 'on_grey')
 
@@ -252,11 +280,16 @@ def list_classes():
 def classes_log(student_id):
     """List all classes a student has ever attended"""
 
+    try:
+        log = Checkin.select().distinct().where(Checkin.student_id == student_id)
+    except Exception:
+        cprint("Student not found", 'red')
+        return
+
     table = []
     added = []
     headers = ["Id", "class"]
 
-    log = Checkin.select().distinct().where(Checkin.student_id == student_id)
     for item in log:
         if item.id not in added:
             table.append([item.class_.id, item.class_.class_name])
@@ -269,9 +302,14 @@ def classes_log(student_id):
 def students_log(class_id):
     """List all students that have ever attended a class"""
 
+    try:
+        log = Checkin.select().distinct().where(Checkin.class__id == class_id)
+    except Exception:
+        cprint("Student not found", 'red')
+        return
+
     table = []
     headers = ["Id", "Student"]
-    log = Checkin.select().distinct().where(Checkin.class__id == class_id)
     for item in log:
         table.append([item.student.id, item.student.student_name])
     print(tabulate(table, headers, tablefmt="fancy_grid"))
