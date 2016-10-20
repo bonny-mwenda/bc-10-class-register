@@ -49,9 +49,16 @@ def create_student(student_name):
 def check_in(student_id, class_id):
     """Checkin student to a class"""
     # import ipdb; ipdb.set_trace()
-
-    student = Student.get(Student.id == student_id)
-    class_ = Class_.get(Class_.id == class_id)
+    try:
+        student = Student.get(Student.id == student_id)
+    except Exception:
+        print('Student Id Not Found')
+        return
+    try:
+        class_ = Class_.get(Class_.id == class_id)
+    except Exception:
+        print('Class Not Found')
+        return
 
     if student.checked_in:
         cprint("{} is already checked in".format(
