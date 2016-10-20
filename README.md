@@ -30,14 +30,12 @@ The app works with Python 2.7 and has these dependencies:
 * The class attendance is now up running. The usage commands are well documented, and can be accessed any time by passing the `-h` or `--help` option. 
 
 ## Usage Example
-Start by creating students and classes.
-
-Add a new student:	`>> create_student Example`
-
-Add a new class:	`>> create_class Myclass`
-
-**Start a class session first,** by running `>> log_start <class_id>`. Then proceed to check in students using `>> check_in <student_id> <class_id>`
-When the class session is over, **end class session** using `>> log_end <class_id>` to check out all the students in that class.
+- Start by creating students and classes.
+- Add a new student:	`>> create_student Example`
+- Add a new class:	`>> create_class Myclass`
+- **Start a class session**:	`>> log_start <class_id>`
+- Check in a student to a class:	`>> check_in <student_id> <class_id>`
+- **end class session**:	`>> log_end <class_id>` to check out all the students in that class.
 More commands can be found using the help menu.
 
 ## Licence
