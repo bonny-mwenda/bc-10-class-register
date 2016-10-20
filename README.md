@@ -36,6 +36,7 @@ The app works with Python 2.7 and has these dependencies:
 - **Start a class session**:	`>> log_start <class_id>`
 - Check in a student to a class:	`>> check_in <student_id> <class_id>`
 - **end class session**:	`>> log_end <class_id>` to check out all the students in that class.
+
 More commands can be found using the help menu.
 
 ## Licence
