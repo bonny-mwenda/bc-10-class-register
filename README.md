@@ -33,6 +33,7 @@ The app works with Python 2.7 and has these dependencies:
 Start by creating students and classes.
 
 Add a new student:	`>> create_student Example`
+
 Add a new class:	`>> create_class Myclass`
 
 **Start a class session first,** by running `>> log_start <class_id>`. Then proceed to check in students using `>> check_in <student_id> <class_id>`
