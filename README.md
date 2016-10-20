@@ -26,10 +26,10 @@ The class attendance is now up running. The usage commands are well documented, 
 
 ## Usage Example
 Start by creating students and classes.
-Add a new student:	`> create_student Example`
-Add a new class:	`>create_class Myclass`
+Add a new student:	`>> create_student Example`
+Add a new class:	`>> create_class Myclass`
 
-**Start a class session first,** by running `> log_start <class_id>`. Then proceed to check in students using `> check_in <student_id> <class_id>`
+**Start a class session first,** by running `>> log_start <class_id>`. Then proceed to check in students using `>> check_in <student_id> <class_id>`
 When the class session is over, **end class session** using `log_end <class_id>` to check out all the students in that class.
 More commands can be found using the help menu.
 
