@@ -25,7 +25,7 @@ Examples:
     register create_class <"Example>
     register check_in <1> <1>
 """
-# from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style
 from pyfiglet import Figlet, figlet_format
 from termcolor import cprint
 import os
