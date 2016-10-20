@@ -48,6 +48,7 @@ def create_student(student_name):
 
 def check_in(student_id, class_id):
     """Checkin student to a class"""
+    # import ipdb; ipdb.set_trace()
 
     student = Student.get(Student.id == student_id)
     class_ = Class_.get(Class_.id == class_id)
@@ -91,6 +92,15 @@ def check_out(student_id, class_id):
             log = Checkout_Log.create(
                 student_name=student.student_name, student_id=student.id, reason=text)
             log.save()
+
+            check_out = Checkin.update(status=0).where(
+            (Checkin.student_id == student_id)and (Checkin.class__id == class_id))
+            check_out.execute()
+
+            # Set the student's check_in status to false
+            qry = Student.update(checked_in=0).where(Student.id == student_id)
+            qry.execute()
+
             cprint("Checked out {} from {}.\n\tReason: {}".format(
                 student.student_name, class_.class_name, log.reason), 'cyan', 'on_grey')
     else:
@@ -118,7 +128,6 @@ def delete_student(student_id):
 def create_class(class_name):
     """Create new class"""
 
-    class_name = args["<class_name>"]
     session = False
 
     new_class = Class_.create(class_name=class_name, session=session)
@@ -138,7 +147,7 @@ def log_start(class_id):
             class_instance.class_name), 'red')
     else:
         # Set class session to true
-        active = Class_.update(session=True).where(Class_.id == class_id)
+        active = Class_.update(session=1).where(Class_.id == class_id)
         active.execute()
 
         # Update class time with current start time
@@ -207,7 +216,7 @@ def list_students():
     for student in Student.select():
         if student.checked_in:
             sc = Checkin.select().where(Checkin.student_id ==
-                                        student.id and Checkin.status == 1).get()
+                                        student.id and Checkin.status == 1)
             c = sc.class_.class_name
         else:
             c = ""
