@@ -172,7 +172,7 @@ class Register(cmd.Cmd):
     def do_clear(self, args):
         os.system('clear')
 
-    def do_exit(self, args):
+    def do_quit(self, args):
         cprint("Thanks for using class register", 'green', 'on_grey')
         exit()
 
