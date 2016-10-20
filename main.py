@@ -22,7 +22,7 @@ Options:
 
 Examples:
     register create_student <"Good Student">
-    register create_class <"Example>
+    register create_class <Example>
     register check_in <1> <1>
 """
 from colorama import Fore, Back, Style
@@ -65,7 +65,7 @@ def docopt_cmd(func):
 
 
 def intro():
-    cprint(figlet_format('Class Register', font='slant'),
+    cprint(figlet_format('CLASS REGISTER', font='slant'),
            'green', attrs=['bold'])
     cprint(__doc__)
 
@@ -73,8 +73,7 @@ def intro():
 class Register(cmd.Cmd):
     """Class register cli."""
 
-    prompt = 'class register > '
-    intro = "Class register cli."
+    prompt = '>> '
 
     file = None
 
