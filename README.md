@@ -36,6 +36,10 @@ The app works with Python 2.7 and has these dependencies:
 - **Start a class session**:	`>> log_start <class_id>`
 - Check in a student to a class:	`>> check_in <student_id> <class_id>`
 - **end class session**:	`>> log_end <class_id>` to check out all the students in that class.
+- List students: `>> list_students`
+- List classes: `>> list_classes`
+- List classes attended by student: `>> log_classes <student_id>`
+- List students who have attended a class: `>> log_students <class_id`>
 
 More commands can be found using the help menu.
 
