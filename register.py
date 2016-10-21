@@ -206,16 +206,18 @@ def log_end(class_id):
         update_end_time.execute()
 
         # Set class session to closed
-        closed = Class_.update(session=1).where(Class_.id == class_id)
+        closed = Class_.update(session=0).where(Class_.id == class_id)
         closed.execute()
 
         cprint("{0} class has ended".format(
             class_instance.class_name), 'green', 'on_grey')
 
         # Checkout all students in the class
-        for entry in Checkin.select().where(Checkin.class__id == class_id and Checkin.status == 1):
+        for entry in Checkin.select().where(Checkin.class__id == class_id, Checkin.status == 1):
+            # set student checked_in 0
             qry = entry.student.update(checked_in=0)
             qry.execute()
+            # s_qry.execute()
 
         cprint("Checked out all students", 'green', 'on_grey')
 
